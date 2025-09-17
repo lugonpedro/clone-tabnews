@@ -1,6 +1,23 @@
 const { exec } = require("node:child_process");
 
-let spinner = ["/", "/", "/", "/", "-", "-", "-", "-", "\\", "\\", "\\", "\\", "|", "|", "|", "|"];
+let spinner = [
+  "/",
+  "/",
+  "/",
+  "/",
+  "-",
+  "-",
+  "-",
+  "-",
+  "\\",
+  "\\",
+  "\\",
+  "\\",
+  "|",
+  "|",
+  "|",
+  "|",
+];
 let i = 0;
 let awaitingMessage = "🛑 Awaiting for postgres";
 
