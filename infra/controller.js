@@ -7,10 +7,11 @@ function onNoMatchHandler(req, res) {
 
 function onErrorHandler(err, req, res) {
   const publicErrorObject = new InternalServerError({
+    statusCode: err.statusCode,
     cause: err,
   });
 
-  res.status(500).json(publicErrorObject);
+  res.status(publicErrorObject.statusCode).json(publicErrorObject);
 }
 
 const controller = {
