@@ -23,6 +23,7 @@ describe("GET /api/v1/user", () => {
           Cookie: `session_id=${sessionObject.token}`,
         },
       });
+
       expect(response.status).toBe(200);
 
       const cacheControl = response.headers.get("Cache-Control");
@@ -73,13 +74,14 @@ describe("GET /api/v1/user", () => {
 
     test("With nonexistent session", async () => {
       const nonexistentToken =
-        "ac93b057f826d458c22ea9d7277c9d5225131f9128bb6f9ffd38756324cc98e6d3f7a6d005fee682b29fcd58d6608d93";
+        "f0b62a5ff97ae607701ceeee2e3c4987c4b9debb534410e2444f9eb2288b6e3b90158a71d086e31eabef9b36cbb549e1";
 
       const response = await fetch("http://localhost:3000/api/v1/user", {
         headers: {
           Cookie: `session_id=${nonexistentToken}`,
         },
       });
+
       expect(response.status).toBe(401);
 
       const responseBody = await response.json();
@@ -89,6 +91,19 @@ describe("GET /api/v1/user", () => {
         message: "User don't have active session",
         action: "Verify if user is logged in and try again",
         status_code: 401,
+      });
+
+      // Set-Cookie assertions
+      const parsedSetCookie = setCookieParser(response, {
+        map: true,
+      });
+
+      expect(parsedSetCookie.session_id).toEqual({
+        name: "session_id",
+        value: "invalid",
+        maxAge: -1,
+        path: "/",
+        httpOnly: true,
       });
     });
 
@@ -110,6 +125,7 @@ describe("GET /api/v1/user", () => {
           Cookie: `session_id=${sessionObject.token}`,
         },
       });
+
       expect(response.status).toBe(401);
 
       const responseBody = await response.json();
@@ -119,6 +135,19 @@ describe("GET /api/v1/user", () => {
         message: "User don't have active session",
         action: "Verify if user is logged in and try again",
         status_code: 401,
+      });
+
+      // Set-Cookie assertions
+      const parsedSetCookie = setCookieParser(response, {
+        map: true,
+      });
+
+      expect(parsedSetCookie.session_id).toEqual({
+        name: "session_id",
+        value: "invalid",
+        maxAge: -1,
+        path: "/",
+        httpOnly: true,
       });
     });
   });
