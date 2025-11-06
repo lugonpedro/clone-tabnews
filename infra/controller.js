@@ -9,6 +9,7 @@ import {
 import * as cookie from "cookie";
 import session from "models/session.js";
 import user from "models/user.js";
+import authorization from "models/authorization.js";
 
 function onNoMatchHandler(req, res) {
   const publicErrorObject = new MethodNotAllowedError();
@@ -94,7 +95,7 @@ function canRequest(feature) {
   return function canRequestMiddleware(req, res, next) {
     const userTryingToRequest = req.context.user;
 
-    if (userTryingToRequest.features.includes(feature)) {
+    if (authorization.can(userTryingToRequest, feature)) {
       return next();
     }
 
