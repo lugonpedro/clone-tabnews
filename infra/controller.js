@@ -1,4 +1,5 @@
 import {
+  ForbiddenError,
   InternalServerError,
   MethodNotAllowedError,
   NotFoundError,
@@ -7,6 +8,7 @@ import {
 } from "infra/errors";
 import * as cookie from "cookie";
 import session from "models/session.js";
+import user from "models/user.js";
 
 function onNoMatchHandler(req, res) {
   const publicErrorObject = new MethodNotAllowedError();
@@ -14,7 +16,11 @@ function onNoMatchHandler(req, res) {
 }
 
 function onErrorHandler(err, req, res) {
-  if (err instanceof ValidationError || err instanceof NotFoundError) {
+  if (
+    err instanceof ValidationError ||
+    err instanceof NotFoundError ||
+    err instanceof ForbiddenError
+  ) {
     return res.status(err.statusCode).json(err);
   }
 
@@ -52,6 +58,53 @@ async function clearSessionCookie(response) {
   response.setHeader("Set-Cookie", setCookie);
 }
 
+async function injectAnonymousOrUser(req, res, next) {
+  if (req.cookies?.session_id) {
+    await injectAuthenticatedUser(req);
+    return next();
+  }
+
+  injectAnonymousUser(req);
+  return next();
+}
+
+async function injectAuthenticatedUser(req) {
+  const sessionToken = req.cookies.session_id;
+  const sessionObject = await session.findOneValidByToken(sessionToken);
+  const userObject = await user.findOneById(sessionObject.user_id);
+
+  req.context = {
+    ...req.context,
+    user: userObject,
+  };
+}
+
+function injectAnonymousUser(req) {
+  const anonymousUserObject = {
+    features: ["read:activation_token", "create:session", "create:user"],
+  };
+
+  req.context = {
+    ...req.context,
+    user: anonymousUserObject,
+  };
+}
+
+function canRequest(feature) {
+  return function canRequestMiddleware(req, res, next) {
+    const userTryingToRequest = req.context.user;
+
+    if (userTryingToRequest.features.includes(feature)) {
+      return next();
+    }
+
+    throw new ForbiddenError({
+      message: "You don't have permission to execute this action",
+      action: `Verify if user have feature ${feature}`,
+    });
+  };
+}
+
 const controller = {
   errorHandlers: {
     onNoMatch: onNoMatchHandler,
@@ -59,6 +112,8 @@ const controller = {
   },
   setSessionCookie,
   clearSessionCookie,
+  injectAnonymousOrUser,
+  canRequest,
 };
 
 export default controller;
