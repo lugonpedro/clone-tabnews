@@ -94,7 +94,6 @@ async function markTokenAsUsed(activationTokenId) {
       ;`,
       values: [activationTokenId],
     });
-    console.log("results", results);
     return results.rows[0];
   }
 }
