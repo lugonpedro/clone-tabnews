@@ -98,6 +98,10 @@ async function activateUser(inactiveUser) {
   return await activation.activateUserByUserId(inactiveUser.id);
 }
 
+async function createActivationToken(userId) {
+  return await activation.create(userId);
+}
+
 const orchestrator = {
   waitForAllServices,
   clearDatabase,
@@ -108,6 +112,7 @@ const orchestrator = {
   getLastEmail,
   extractUUID,
   activateUser,
+  createActivationToken,
 };
 
 export default orchestrator;
