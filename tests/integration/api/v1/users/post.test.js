@@ -32,7 +32,7 @@ describe("POST /api/v1/users", () => {
         id: responseBody.id,
         username: "johndoe",
         email: "john@doe.com",
-        features: ["create:session", "read:activation_token"],
+        features: ["read:activation_token"],
         password: responseBody.password,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
