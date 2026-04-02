@@ -1,5 +1,4 @@
 import orchestrator from "tests/orchestrator.js";
-import session from "models/session";
 import user from "models/user";
 import { version as uuidVersion } from "uuid";
 import activation from "models/activation";
@@ -32,7 +31,7 @@ describe("PATCH /api/v1/activations/[token_id]", () => {
 
     test("With an expired token", async () => {
       jest.useFakeTimers({
-        now: new Date(Date.now() - session.EXPIRATION_IN_MILLISECONDS),
+        now: new Date(Date.now() - activation.EXPIRATION_IN_MILLISECONDS),
       });
 
       const createdUser = await orchestrator.createUser({
@@ -83,6 +82,14 @@ describe("PATCH /api/v1/activations/[token_id]", () => {
       );
 
       expect(response2.status).toBe(404);
+
+      const responseBody2 = await response2.json();
+      expect(responseBody2).toEqual({
+        name: "NotFoundError",
+        message: "Activation token not found or expired",
+        action: "Register again",
+        status_code: 404,
+      });
     });
 
     test("With a valid token", async () => {
@@ -133,6 +140,27 @@ describe("PATCH /api/v1/activations/[token_id]", () => {
         "read:session",
       ]);
     });
+
+    test("With valid token but already activated user", async () => {
+      const createdUser = await orchestrator.createUser();
+      await orchestrator.activateUser(createdUser)
+      const activationToken = await activation.create(createdUser.id)
+
+      const response = await fetch(`http://localhost:3000/api/v1/activations/${activationToken.id}`, 
+        {method: "PATCH"}
+      )
+
+      expect(response.status).toBe(403)
+
+      const responseBody = await response.json()
+
+      expect(responseBody).toEqual({
+        name: "ForbiddenError",
+        message: "You cannot use activation tokens anymore",
+        action: "Contact the support",
+        status_code: 403,
+      });
+    })
   });
 
   describe("Default user", () => {
