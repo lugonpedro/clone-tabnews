@@ -138,21 +138,23 @@ describe("PATCH /api/v1/activations/[token_id]", () => {
       expect(activatedUser.features).toEqual([
         "create:session",
         "read:session",
+        "update:user",
       ]);
     });
 
     test("With valid token but already activated user", async () => {
       const createdUser = await orchestrator.createUser();
-      await orchestrator.activateUser(createdUser)
-      const activationToken = await activation.create(createdUser.id)
+      await orchestrator.activateUser(createdUser);
+      const activationToken = await activation.create(createdUser.id);
 
-      const response = await fetch(`http://localhost:3000/api/v1/activations/${activationToken.id}`, 
-        {method: "PATCH"}
-      )
+      const response = await fetch(
+        `http://localhost:3000/api/v1/activations/${activationToken.id}`,
+        { method: "PATCH" },
+      );
 
-      expect(response.status).toBe(403)
+      expect(response.status).toBe(403);
 
-      const responseBody = await response.json()
+      const responseBody = await response.json();
 
       expect(responseBody).toEqual({
         name: "ForbiddenError",
@@ -160,7 +162,7 @@ describe("PATCH /api/v1/activations/[token_id]", () => {
         action: "Contact the support",
         status_code: 403,
       });
-    })
+    });
   });
 
   describe("Default user", () => {
