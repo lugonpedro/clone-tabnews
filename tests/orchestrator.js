@@ -102,6 +102,11 @@ async function createActivationToken(userId) {
   return await activation.create(userId);
 }
 
+async function addFeaturesToUser(userObject, features) {
+  const updatedUser = await user.addFeatures(userObject.id, features);
+  return updatedUser;
+}
+
 const orchestrator = {
   waitForAllServices,
   clearDatabase,
@@ -113,6 +118,7 @@ const orchestrator = {
   extractUUID,
   activateUser,
   createActivationToken,
+  addFeaturesToUser,
 };
 
 export default orchestrator;
