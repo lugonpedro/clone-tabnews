@@ -1,26 +1,30 @@
-// import nodemailer from "nodemailer";
+import nodemailer from "nodemailer";
 import { ServiceError } from "./errors";
-import Resend from "resend";
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { Resend } from "resend";
 
-// const transporter = nodemailer.createTransport({
-//   host: process.env.EMAIL_SMTP_HOST,
-//   port: process.env.EMAIL_SMTP_PORT,
-//   auth: {
-//     user: process.env.EMAIL_SMTP_USER,
-//     pass: process.env.EMAIL_SMTP_PASSWORD,
-//   },
-//   secure: process.env.NODE_ENV === "production",
-// });
+const transporter = nodemailer.createTransport({
+  host: process.env.EMAIL_SMTP_HOST,
+  port: process.env.EMAIL_SMTP_PORT,
+  auth: {
+    user: process.env.EMAIL_SMTP_USER,
+    pass: process.env.EMAIL_SMTP_PASSWORD,
+  },
+  secure: process.env.NODE_ENV === "production",
+});
 
 async function send(emailOptions) {
   try {
-    // await transporter.sendMail(emailOptions);
+    if (process.env.NODE_ENV !== "production") {
+      await transporter.sendMail(emailOptions);
+      return;
+    }
 
-    resend.emails.send({
+    const resend = new Resend(process.env.RESEND_API_KEY);
+
+    await resend.emails.send({
       from: "onboarding@resend.dev",
       to: emailOptions.to,
-      subject: emailOptions.suject,
+      subject: emailOptions.subject,
       text: emailOptions.text,
     });
   } catch (error) {
