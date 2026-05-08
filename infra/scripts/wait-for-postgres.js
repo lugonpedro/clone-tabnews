@@ -22,7 +22,10 @@ let i = 0;
 let awaitingMessage = "🛑 Awaiting for postgres";
 
 function checkPostgres() {
-  exec("docker exec tabnews-dev pg_isready --host localhost", handleReturn);
+  exec(
+    "docker exec database-tabnews pg_isready --host localhost",
+    handleReturn,
+  );
 
   function handleReturn(error, stdout) {
     if (stdout.search("accepting connections") === -1) {
