@@ -176,7 +176,7 @@ describe("PATCH /api/v1/activations/[token_id]", () => {
       );
 
       await orchestrator.activateUser(createdUser);
-      const createdSession = await orchestrator.createSession(createdUser.id);
+      const createdSession = await orchestrator.createSession(createdUser);
 
       const response = await fetch(
         `${webserver.origin}/api/v1/activations/${validToken.id}`,
